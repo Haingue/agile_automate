@@ -1,3 +1,4 @@
+import { TmmfController } from './tmmf.controller';
 import { ConfluenceModule } from 'src/confluence/confluence.module';
 import { TmmfService } from './tmmf.service';
 /*
@@ -9,7 +10,7 @@ import { JiraModule } from 'src/jira/jira.module';
 
 @Module({
   imports: [ConfluenceModule, JiraModule],
-  controllers: [],
+  controllers: [TmmfController],
   providers: [TmmfService],
 })
 export class TmmfModule {}
