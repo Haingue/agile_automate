@@ -2,116 +2,54 @@
 https://docs.nestjs.com/providers#services
 */
 
-import { Injectable } from '@nestjs/common';
-import { Content } from './types';
-import ConfluenceApi from './ConfluenceApi';
-import { title } from 'process';
+import { Injectable, Logger } from '@nestjs/common';
+import { CONFLUENCE_API, Content, ContentType } from './types';
 
 @Injectable()
 export class ConfluenceService {
-  projectTemplateId: Number = 97944331;
-  initiativeTemplateId: Number = 97944351;
-  documentTemplateId: Number = 111052875;
-  preparationTemplateId: Number = 97780294;
-  doTemplateId: Number = 97944199;
+  private readonly logger = new Logger(ConfluenceService.name);
 
-  constructor(private readonly confluenceApi: ConfluenceApi) {}
-
-  async createProject(title: string): Promise<Content> {
-    let projectTemplate = await this.confluenceApi.getTemplate(
-      this.projectTemplateId,
+  async getTemplate(templateId: Number): Promise<Content> {
+    this.logger.debug(`Load template: ${templateId}`);
+    let responseTemplate = await fetch(
+      `${CONFLUENCE_API.baseUrl}/api/template/${templateId}?expand=body.storage`,
+      {
+        headers: {
+          Authorization: CONFLUENCE_API.token,
+          Accept: 'application/json',
+        },
+      },
     );
-    let projectPage: Content = {
-      title: title,
-      body: {
-        storage: {
-          value: projectTemplate.body.storage.value,
-          representation: 'storage',
-        },
-      },
-      ancestors: [{ id: '98140207' }],
-    };
-    projectPage = await this.confluenceApi.savePage(projectPage);
-    this.createDocument(projectPage);
-    return projectPage;
+    if (responseTemplate.status !== 200) {
+      console.error('Error to retrieve the content of the template');
+      throw new Error(`Template not found: ${templateId}`);
+    }
+    const template: Content = await responseTemplate.json();
+    return template;
   }
 
-  async createDocument(project: Content): Promise<Content> {
-    let documentTemplate = await this.confluenceApi.getTemplate(
-      this.documentTemplateId,
-    );
-    let documentPage: Content = {
-      title: `${project.title} - Documentation`,
-      body: {
-        storage: {
-          value: documentTemplate.body.storage.value,
-          representation: 'storage',
-        },
-      },
-      ancestors: [project],
+  async savePage(page: Content): Promise<Content> {
+    this.logger.debug(`Save page: ${JSON.stringify(page)}`);
+    page.type = ContentType.page;
+    page.status = 'draft';
+    page.space = {
+      key: CONFLUENCE_API.spaceKey,
     };
-    documentPage = await this.confluenceApi.savePage(documentPage);
-    return documentPage;
-  }
-
-  async createInitiative(title: string, project: Content): Promise<Content> {
-    let initiativeTemplate = await this.confluenceApi.getTemplate(
-      this.initiativeTemplateId,
-    );
-    let initiativePage: Content = {
-      title: `${project.title} - ${title}`,
-      body: {
-        storage: {
-          value: initiativeTemplate.body.storage.value,
-          representation: 'storage',
-        },
+    let responsePage = await fetch(`${CONFLUENCE_API.baseUrl}/api/content`, {
+      method: 'POST',
+      headers: {
+        Authorization: CONFLUENCE_API.token,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-      ancestors: [project],
-    };
-    initiativePage = await this.confluenceApi.savePage(initiativePage);
-    this.createPreparation(initiativePage);
-    this.createDo(initiativePage);
-    return initiativePage;
-  }
-
-  _summarizeTitle(title: string) {
-    return title
-      .split(' ')
-      .map((word) => word[0])
-      .join('');
-  }
-
-  async createPreparation(initiative: Content): Promise<Content> {
-    let preparationTemplate = await this.confluenceApi.getTemplate(
-      this.preparationTemplateId,
-    );
-    let preparationPage: Content = {
-      title: `[${this._summarizeTitle(initiative.title)}] - Preparation`,
-      body: {
-        storage: {
-          value: preparationTemplate.body.storage.value,
-          representation: 'storage',
-        },
-      },
-      ancestors: [initiative],
-    };
-    preparationPage = await this.confluenceApi.savePage(preparationPage);
-    return preparationPage;
-  }
-
-  async createDo(initiative: Content): Promise<Content> {
-    let doTemplate = await this.confluenceApi.getTemplate(this.doTemplateId);
-    let doPage: Content = {
-      title: `[${this._summarizeTitle(initiative.title)}] - do`,
-      body: {
-        storage: {
-          value: doTemplate.body.storage.value,
-          representation: 'storage',
-        },
-      },
-      ancestors: [initiative],
-    };
-    doPage = await this.confluenceApi.savePage(doPage);
-    return doPage;
+      body: JSON.stringify(page),
+    });
+    if (responsePage.status !== 200) {
+      const result = await responsePage.json();
+      throw new Error(
+        `Error to save page[${responsePage.status}]: ${JSON.stringify(result)}`,
+      );
+    }
+    return responsePage.json();
   }
 }

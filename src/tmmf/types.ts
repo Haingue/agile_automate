@@ -22,3 +22,11 @@ export enum Label {
   unplanned,
   plant_priority,
 }
+
+export type Properties = {
+  projectTemplateId: Number;
+  initiativeTemplateId: Number;
+  documentTemplateId: Number;
+  preparationTemplateId: Number;
+  doTemplateId: Number;
+};
