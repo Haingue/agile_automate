@@ -34,7 +34,7 @@ job:
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
           
       - name: "Build image"
-        run: docker build . --file DOCKERFILE_LOCATION --tag ${{ env.GAR_LOCATION }}
+        run: docker build . --tag ${{ env.GAR_LOCATION }} --build-arg='NODE_ENV=dev'"
         working-directory: WORKING_DIRECTORY
 
       - name: "Push image"
