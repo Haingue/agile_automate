@@ -28,6 +28,25 @@ export class ConfluenceService {
     return template;
   }
 
+  async getOnePage(pageId: Number): Promise<Content> {
+    this.logger.debug(`Load page: ${pageId}`);
+    let responsePage = await fetch(
+      `${CONFLUENCE_API.baseUrl}/api/content?expand=body.storage&id=${pageId}`,
+      {
+        headers: {
+          Authorization: CONFLUENCE_API.token,
+          Accept: 'application/json',
+        },
+      },
+    );
+    if (responsePage.status !== 200) {
+      console.error('Error to retrieve the content of the page');
+      throw new Error(`Page not found: ${pageId}`);
+    }
+    const page: Content = await responsePage.json();
+    return page;
+  }
+
   async savePage(page: Content): Promise<Content> {
     this.logger.debug(`Save page: ${JSON.stringify(page)}`);
     page.type = ContentType.page;

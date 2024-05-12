@@ -7,7 +7,7 @@ import { ConfluenceService } from 'src/confluence/confluence.service';
 import { Content } from 'src/confluence/types';
 import { Properties } from './types';
 import { JiraService } from 'src/jira/jira.service';
-import { Issue } from 'src/jira/types';
+import { Issue, Link, RemoteLink } from 'src/jira/types';
 
 @Injectable()
 export class TmmfService {
@@ -25,15 +25,48 @@ export class TmmfService {
   @Inject()
   confluenceService: ConfluenceService;
 
+  /**
+   * Method to create Issue on Jira Cloud with the type inititive.
+   * @param canvas
+   */
   async approveCanvas(canvas: Content): Promise<void> {
-    this.createInitiativeOnJira(canvas);
+    this.createProjectInitiativeOnJira(canvas);
   }
 
+  /**
+   * Method to create Issue on Jira Cloud and Page on Confluence.
+   * Jira:
+   *  - Epic: Preparation
+   *    - Story/Task: {preparation task list}
+   *  - Epic: Do
+   *  - Epic: ...
+   * Confluence:
+   *  - Page: Projects > {Theme} > {Initiative} > {Epic}
+   * @param initiative
+   */
   async putProjectInBacklog(initiative: Issue): Promise<void> {
-    this.createProjectOnConfluence(initiative.fields.summary);
+    const remotelinks: RemoteLink[] = await this.jiraService.getRemoteLink(
+      initiative.id,
+    );
+    const projectId: RemoteLink = remotelinks
+      .filter((remotelink) => remotelink.relationship === 'Wiki Page')
+      .shift();
+    let projectPage: Content;
+    if (projectId) {
+      projectPage = await this.confluenceService.getOnePage(
+        parseInt(projectId.object.url.split(/.*=/)[1]),
+      );
+    } else {
+      projectPage = await this.createProjectOnConfluence(
+        initiative.fields.parent.fields.summary,
+      );
+    }
+    this.createInitiativeOnConfluence(initiative.fields.summary, projectPage);
+
+    // TODO add Jira issues
   }
 
-  private async createInitiativeOnJira(canvas: Content): Promise<Issue> {
+  private async createProjectInitiativeOnJira(canvas: Content): Promise<Issue> {
     if (canvas.title) throw new BadRequestException();
     const parentkey = '';
     if (parentkey.length === 0)
