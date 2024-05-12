@@ -9,5 +9,6 @@ import { Module } from '@nestjs/common';
   imports: [],
   controllers: [],
   providers: [ConfluenceService],
+  exports: [ConfluenceService],
 })
 export class ConfluenceModule {}
