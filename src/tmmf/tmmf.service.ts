@@ -7,7 +7,7 @@ import { ConfluenceService } from 'src/confluence/confluence.service';
 import { Content } from 'src/confluence/types';
 import { Properties } from './types';
 import { JiraService } from 'src/jira/jira.service';
-import { Issue, Link, RemoteLink } from 'src/jira/types';
+import { Issue, RemoteLink } from 'src/jira/types';
 
 @Injectable()
 export class TmmfService {

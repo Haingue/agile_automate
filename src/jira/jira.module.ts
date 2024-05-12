@@ -1,7 +1,4 @@
 import { JiraService } from './jira.service';
-/*
-https://docs.nestjs.com/modules
-*/
 
 import { Module } from '@nestjs/common';
 
@@ -9,5 +6,6 @@ import { Module } from '@nestjs/common';
   imports: [],
   controllers: [],
   providers: [JiraService],
+  exports: [JiraService],
 })
 export class JiraModule {}
