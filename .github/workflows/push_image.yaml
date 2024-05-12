@@ -36,7 +36,7 @@ jobs:
 
       - name: 'Build image'
         run: docker build . --tag ${{ env.GAR_LOCATION }} --build-arg='NODE_ENV=dev'
-        working-directory: WORKING_DIRECTORY
+        working-directory: .
 
       - name: 'Push image'
         run: docker push ${{ env.GAR_LOCATION }}
