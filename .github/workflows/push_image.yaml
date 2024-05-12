@@ -10,7 +10,7 @@ on:
 env:
   PROJECT_ID: agile-420314
   REGION: europe-west1
-  GAR_LOCATION: europe-west1-docker.pkg.dev/agile-420314/agile_automate
+  GAR_LOCATION: europe-west1-docker.pkg.dev/agile-420314/personal-project/agile_automate
 
 jobs:
   build-push-artifact:
