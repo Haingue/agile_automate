@@ -148,3 +148,24 @@ export type Issue = {
   fields?: Fields;
   expand?: string;
 };
+
+export interface RemoteLink {
+  id: number;
+  self: string;
+  globalId: string;
+  application: Application;
+  relationship: string;
+  object: Link;
+}
+
+export interface Application {
+  type: string;
+  name: string;
+}
+
+export interface Link {
+  url: string;
+  title: string;
+  icon: any;
+  status: Status;
+}
