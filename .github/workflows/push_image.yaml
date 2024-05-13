@@ -35,9 +35,9 @@ jobs:
         run: |-
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-      - name: Docker login
-        run: echo '${{ secrets.SERVICE_ACCOUNT_KEY }}' | docker login -u oauth2accesstoken --password-stdin https://${{ env.REGION }}-docker.pkg.dev
-        working-directory: .
+      # - name: Docker login
+      #   run: echo '${{ secrets.SERVICE_ACCOUNT_KEY }}' | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+      #   working-directory: .
 
       - name: 'Build image'
         run: docker build . --tag ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }} --build-arg='NODE_ENV=dev'
