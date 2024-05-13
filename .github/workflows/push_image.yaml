@@ -1,10 +1,7 @@
 name: Release to GCP
 
 on:
-  workflow_dispatch:
   push:
-    branches: ['main']
-  pull_request:
     branches: ['main']
 
 env:
@@ -33,35 +30,16 @@ jobs:
 
       - name: Docker auth
         run: |-
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
-        # gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Docker test login
         run: docker system info | grep -E 'Username|Registry'
         working-directory: .
 
-      # - name: Docker login
-      #   run: echo '${{ secrets.SERVICE_ACCOUNT_KEY }}' | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-      #   working-directory: .
-
-      # - name: Docker test login
-      #   run: docker system info | grep -E 'Username|Registry'
-      #   working-directory: .
-
-      # - name: 'Build image'
-      #   run: docker build . --tag ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }} --build-arg='NODE_ENV=dev'
-      #   working-directory: .
-
-      # - name: 'Push image'
-      #   run: docker push ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}
-
       - id: extract-version
         name: Extract version and set it to TAG env var
         run: |
           echo ::set-output name=version::$(jq -r '.version' package.json)
-      # - name: Get tag
-      #   id: get-tag
-      #   run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
 
       - id: docker-build-push-tagged
         name: Build and Tag Docker image and push to Google Artifact Registry
@@ -70,10 +48,8 @@ jobs:
           context: .
           build-args: NODE_ENV=dev
           tags: |
-            ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:${{ steps.extract-version.outputs.version }}
-          # ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:${{ steps.get-tag.outputs.short_ref }}
-          # ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:$GITHUB_ENV
+            ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:latest
           push: true
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
