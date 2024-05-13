@@ -58,7 +58,7 @@ jobs:
       - id: extract-version
         name: Extract version and set it to TAG env var
         run: |
-          echo ::set-output version=$(jq -r '.version' package.json)
+          echo ::set-output name=version::$(jq -r '.version' package.json)
       # - name: Get tag
       #   id: get-tag
       #   run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
