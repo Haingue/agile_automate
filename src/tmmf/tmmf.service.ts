@@ -63,7 +63,10 @@ export class TmmfService {
     }
     this.createInitiativeOnConfluence(initiative.fields.summary, projectPage);
 
-    // TODO add Jira issues
+    // TODO add Preparation Epic issues (Jira)
+    // Then add Tasks issues (Jira)
+
+    // TODO add Do Epic issues (Jira)
   }
 
   private async createProjectInitiativeOnJira(canvas: Content): Promise<Issue> {
