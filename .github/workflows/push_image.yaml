@@ -73,5 +73,5 @@ jobs:
           # ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:${{ steps.get-tag.outputs.short_ref }}
           # ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:$GITHUB_ENV
           push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
