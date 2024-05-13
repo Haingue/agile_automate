@@ -15,8 +15,10 @@ env:
 
 jobs:
   analyze:
-    uses: github.com/Haingue/agile_automate/actions/workflows/analyze.yml@main
+    uses: .github/workflows/analyze.yml@main
+
   build-push-artifact:
+    needs: analyze
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
