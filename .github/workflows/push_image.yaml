@@ -46,9 +46,9 @@ jobs:
       # - name: 'Push image'
       #   run: docker push ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}
 
-      - name: Get tag
-        id: get-tag
-        run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
+      # - name: Get tag
+      #   id: get-tag
+      #   run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
 
       - id: docker-push-tagged
         name: Tag Docker image and push to Google Artifact Registry
@@ -56,5 +56,5 @@ jobs:
         with:
           push: true
           tags: |
-            ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:${{ steps.get-tag.outputs.short_ref }}
             ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:latest
+          # ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:${{ steps.get-tag.outputs.short_ref }}
