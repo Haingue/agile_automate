@@ -55,9 +55,10 @@ jobs:
       # - name: 'Push image'
       #   run: docker push ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}
 
-      # - name: Extract version and set it to TAG env var
-      #   run: |
-      #     echo "TAG=$(jq -r '.version' package.json)" >> $GITHUB_ENV
+      - id: extract-version
+        name: Extract version and set it to TAG env var
+        run: |
+          echo ::set-output version=$(jq -r '.version' package.json)
       # - name: Get tag
       #   id: get-tag
       #   run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
@@ -70,6 +71,7 @@ jobs:
           build-args: NODE_ENV=dev
           tags: |
             ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:${{ steps.extract-version.outputs.version }}
           # ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:${{ steps.get-tag.outputs.short_ref }}
           # ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:$GITHUB_ENV
           push: true
