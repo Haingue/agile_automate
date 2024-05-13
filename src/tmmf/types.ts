@@ -1,5 +1,3 @@
-import { type } from 'os';
-
 export enum Shop {
   ITandD = 'IT&D',
   press = 'Press',

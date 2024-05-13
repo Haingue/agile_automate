@@ -3,19 +3,22 @@ https://docs.nestjs.com/providers#services
 */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { CONFLUENCE_API, Content, ContentType } from './types';
+import { ConfluenceApi, Content, ContentType } from './types';
 
 @Injectable()
 export class ConfluenceService {
   private readonly logger = new Logger(ConfluenceService.name);
 
-  async getTemplate(templateId: Number): Promise<Content> {
+  async getTemplate(
+    templateId: Number,
+    confluenceApi: ConfluenceApi,
+  ): Promise<Content> {
     this.logger.debug(`Load template: ${templateId}`);
     let responseTemplate = await fetch(
-      `${CONFLUENCE_API.baseUrl}/api/template/${templateId}?expand=body.storage`,
+      `${confluenceApi.baseUrl}/api/template/${templateId}?expand=body.storage`,
       {
         headers: {
-          Authorization: CONFLUENCE_API.token,
+          Authorization: confluenceApi.token,
           Accept: 'application/json',
         },
       },
@@ -28,13 +31,16 @@ export class ConfluenceService {
     return template;
   }
 
-  async getOnePage(pageId: Number): Promise<Content> {
+  async getOnePage(
+    pageId: Number,
+    confluenceApi: ConfluenceApi,
+  ): Promise<Content> {
     this.logger.debug(`Load page: ${pageId}`);
     let responsePage = await fetch(
-      `${CONFLUENCE_API.baseUrl}/api/content?expand=body.storage&id=${pageId}`,
+      `${confluenceApi.baseUrl}/api/content?expand=body.storage&id=${pageId}`,
       {
         headers: {
-          Authorization: CONFLUENCE_API.token,
+          Authorization: confluenceApi.token,
           Accept: 'application/json',
         },
       },
@@ -47,17 +53,20 @@ export class ConfluenceService {
     return page;
   }
 
-  async savePage(page: Content): Promise<Content> {
+  async savePage(
+    page: Content,
+    confluenceApi: ConfluenceApi,
+  ): Promise<Content> {
     this.logger.debug(`Save page: ${JSON.stringify(page)}`);
     page.type = ContentType.page;
     page.status = 'draft';
     page.space = {
-      key: CONFLUENCE_API.spaceKey,
+      key: confluenceApi.spaceKey,
     };
-    let responsePage = await fetch(`${CONFLUENCE_API.baseUrl}/api/content`, {
+    let responsePage = await fetch(`${confluenceApi.baseUrl}/api/content`, {
       method: 'POST',
       headers: {
-        Authorization: CONFLUENCE_API.token,
+        Authorization: confluenceApi.token,
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },

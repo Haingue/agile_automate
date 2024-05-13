@@ -1,20 +1,16 @@
-/*
-https://docs.nestjs.com/providers#services
-*/
-
 import { Injectable, Logger } from '@nestjs/common';
-import { Issue, JIRA_API, RemoteLink } from './types';
+import { Issue, JiraApi, RemoteLink } from './types';
 
 @Injectable()
 export class JiraService {
   private readonly logger = new Logger(JiraService.name);
 
-  async createIssue(issue: Issue): Promise<Issue> {
+  async createIssue(issue: Issue, jiraApi: JiraApi): Promise<Issue> {
     this.logger.debug(`Save issue: ${issue.fields.summary}`);
-    let responsePage = await fetch(`${JIRA_API.baseUrl}/api/2/issue`, {
+    let responsePage = await fetch(`${jiraApi.baseUrl}/api/2/issue`, {
       method: 'POST',
       headers: {
-        Authorization: JIRA_API.token,
+        Authorization: jiraApi.token,
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
@@ -29,14 +25,17 @@ export class JiraService {
     return responsePage.json();
   }
 
-  async getRemoteLink(issueId: string): Promise<RemoteLink[]> {
+  async getRemoteLink(
+    issueId: string,
+    jiraApi: JiraApi,
+  ): Promise<RemoteLink[]> {
     this.logger.debug(`Get issue links: ${issueId}`);
     let responsePage = await fetch(
-      `${JIRA_API.baseUrl}/api/2/issue/${issueId}/remotelink`,
+      `${jiraApi.baseUrl}/api/2/issue/${issueId}/remotelink`,
       {
         method: 'GET',
         headers: {
-          Authorization: JIRA_API.token,
+          Authorization: jiraApi.token,
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },

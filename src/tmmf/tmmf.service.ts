@@ -4,10 +4,10 @@ https://docs.nestjs.com/providers#services
 
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfluenceService } from 'src/confluence/confluence.service';
-import { Content } from 'src/confluence/types';
+import { ConfluenceApi, Content } from 'src/confluence/types';
 import { Properties } from './types';
 import { JiraService } from 'src/jira/jira.service';
-import { Issue, RemoteLink } from 'src/jira/types';
+import { Issue, JiraApi, RemoteLink } from 'src/jira/types';
 
 @Injectable()
 export class TmmfService {
@@ -17,6 +17,22 @@ export class TmmfService {
     documentTemplateId: 111052875,
     preparationTemplateId: 97780294,
     doTemplateId: 97944199,
+  };
+
+  private JIRA_API: JiraApi = {
+    baseUrl: 'https://toyota-europe.atlassian.net/rest',
+    token: `Basic ${Buffer.from(
+      `fabien.haingue@toyotafr.com:ATATT3xFfGF04uCS8eEnWbgfrBBIDOvuyNsCYGoggPIcVakEvW4kPkLFG1P0nI7CsPwqFtUrfZBClfpLgktnBUdv8bjz9EMCPv5QnSi1x9Ad7D9kY8TMEL6Z5ADvN_FlXHHfasxHBpcIcINJAMB1ECw_DU0xRMnHryEi1MrmO5nkMKvUGSLIszs=14037330`,
+    ).toString('base64')}`,
+    spaceKey: 'TMMFIS',
+  };
+
+  private CONFLUENCE_API: ConfluenceApi = {
+    baseUrl: 'https://toyota-europe.atlassian.net/wiki/rest',
+    token: `Basic ${Buffer.from(
+      `fabien.haingue@toyotafr.com:ATATT3xFfGF04uCS8eEnWbgfrBBIDOvuyNsCYGoggPIcVakEvW4kPkLFG1P0nI7CsPwqFtUrfZBClfpLgktnBUdv8bjz9EMCPv5QnSi1x9Ad7D9kY8TMEL6Z5ADvN_FlXHHfasxHBpcIcINJAMB1ECw_DU0xRMnHryEi1MrmO5nkMKvUGSLIszs=14037330`,
+    ).toString('base64')}`,
+    spaceKey: 'TMMFIS',
   };
 
   @Inject()
@@ -47,6 +63,7 @@ export class TmmfService {
   async putProjectInBacklog(initiative: Issue): Promise<void> {
     const remotelinks: RemoteLink[] = await this.jiraService.getRemoteLink(
       initiative.id,
+      this.JIRA_API,
     );
     const projectId: RemoteLink = remotelinks
       .filter((remotelink) => remotelink.relationship === 'Wiki Page')
@@ -55,6 +72,7 @@ export class TmmfService {
     if (projectId) {
       projectPage = await this.confluenceService.getOnePage(
         parseInt(projectId.object.url.split(/.*=/)[1]),
+        this.CONFLUENCE_API,
       );
     } else {
       projectPage = await this.createProjectOnConfluence(
@@ -91,12 +109,13 @@ export class TmmfService {
         parent: { id: null, key: parentkey },
       },
     };
-    return this.jiraService.createIssue(initiative);
+    return this.jiraService.createIssue(initiative, this.JIRA_API);
   }
 
   private async createProjectOnConfluence(title: string): Promise<Content> {
     let projectTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.projectTemplateId,
+      this.CONFLUENCE_API,
     );
     let projectPage: Content = {
       title: title,
@@ -108,7 +127,10 @@ export class TmmfService {
       },
       ancestors: [{ id: '98140207' }],
     };
-    projectPage = await this.confluenceService.savePage(projectPage);
+    projectPage = await this.confluenceService.savePage(
+      projectPage,
+      this.CONFLUENCE_API,
+    );
     this.createDocumentOnConfluence(projectPage);
     return projectPage;
   }
@@ -116,6 +138,7 @@ export class TmmfService {
   private async createDocumentOnConfluence(project: Content): Promise<Content> {
     let documentTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.documentTemplateId,
+      this.CONFLUENCE_API,
     );
     let documentPage: Content = {
       title: `${project.title} - Documentation`,
@@ -127,7 +150,10 @@ export class TmmfService {
       },
       ancestors: [project],
     };
-    documentPage = await this.confluenceService.savePage(documentPage);
+    documentPage = await this.confluenceService.savePage(
+      documentPage,
+      this.CONFLUENCE_API,
+    );
     return documentPage;
   }
 
@@ -137,6 +163,7 @@ export class TmmfService {
   ): Promise<Content> {
     let initiativeTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.initiativeTemplateId,
+      this.CONFLUENCE_API,
     );
     let initiativePage: Content = {
       title: `${project.title} - ${title}`,
@@ -148,7 +175,10 @@ export class TmmfService {
       },
       ancestors: [project],
     };
-    initiativePage = await this.confluenceService.savePage(initiativePage);
+    initiativePage = await this.confluenceService.savePage(
+      initiativePage,
+      this.CONFLUENCE_API,
+    );
     this.createPreparationOnConfluence(initiativePage);
     this.createDoOnConfluence(initiativePage);
     return initiativePage;
@@ -166,6 +196,7 @@ export class TmmfService {
   ): Promise<Content> {
     let preparationTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.preparationTemplateId,
+      this.CONFLUENCE_API,
     );
     let preparationPage: Content = {
       title: `[${this._summarizeTitle(initiative.title)}] - Preparation`,
@@ -177,13 +208,17 @@ export class TmmfService {
       },
       ancestors: [initiative],
     };
-    preparationPage = await this.confluenceService.savePage(preparationPage);
+    preparationPage = await this.confluenceService.savePage(
+      preparationPage,
+      this.CONFLUENCE_API,
+    );
     return preparationPage;
   }
 
   private async createDoOnConfluence(initiative: Content): Promise<Content> {
     let doTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.doTemplateId,
+      this.CONFLUENCE_API,
     );
     let doPage: Content = {
       title: `[${this._summarizeTitle(initiative.title)}] - do`,
@@ -195,7 +230,7 @@ export class TmmfService {
       },
       ancestors: [initiative],
     };
-    doPage = await this.confluenceService.savePage(doPage);
+    doPage = await this.confluenceService.savePage(doPage, this.CONFLUENCE_API);
     return doPage;
   }
 }

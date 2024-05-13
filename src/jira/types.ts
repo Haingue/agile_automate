@@ -4,14 +4,6 @@ export type JiraApi = {
   spaceKey: string;
 };
 
-export const JIRA_API: JiraApi = {
-  baseUrl: 'https://toyota-europe.atlassian.net/rest',
-  token: `Basic ${Buffer.from(
-    `fabien.haingue@toyotafr.com:ATATT3xFfGF04uCS8eEnWbgfrBBIDOvuyNsCYGoggPIcVakEvW4kPkLFG1P0nI7CsPwqFtUrfZBClfpLgktnBUdv8bjz9EMCPv5QnSi1x9Ad7D9kY8TMEL6Z5ADvN_FlXHHfasxHBpcIcINJAMB1ECw_DU0xRMnHryEi1MrmO5nkMKvUGSLIszs=14037330`,
-  ).toString('base64')}`,
-  spaceKey: 'TMMFIS',
-};
-
 export interface Status {
   self?: string;
   description?: string;
