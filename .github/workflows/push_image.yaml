@@ -33,7 +33,8 @@ jobs:
 
       - name: Docker auth
         run: |-
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+        # gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Docker test login
         run: docker system info | grep -E 'Username|Registry'
