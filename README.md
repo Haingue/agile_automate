@@ -1,16 +1,47 @@
-# TMMF - Atlassian automate
+# TMMF - Agile automate
+
+[![Analyze code](https://github.com/Haingue/agile_automate/actions/workflows/analyze.yml/badge.svg)](https://github.com/Haingue/agile_automate/actions/workflows/analyze.yml)
+[![.github/workflows/release-gcp.yml](https://github.com/Haingue/agile_automate/actions/workflows/release-gcp.yml/badge.svg)](https://github.com/Haingue/agile_automate/actions/workflows/release-gcp.yml)
 
 ## Description
 
-- [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Robot helping to use Jira/Confluence from TMMF's project management method.
 
-## Installation
+### Tools
+
+- [Nest](https://github.com/nestjs/nest)
+- Jest
+- Docker
+
+## License
+
+This project is released under the [MIT license](LICENSE).
+
+## Usage
+
+Configure your Confluence Automate to call the first endpoint and Configure your Jira automate to call the second endpoint.
+
+| N°  | URL                     | Description                                                                                                                                                                                                                                                                                                                                                                                                     | Body            |
+| --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| 1   | `/tmmf/approve-project` | Url to approved a project canvas, the automate will send an email to the team and create the project initiative in Jira                                                                                                                                                                                                                                                                                         | [Page content]  |
+| 2   | `/tmmf/start-project`   | Url to start a project, the automate will send a email and create the Preparation Epic and every static tasks and create every conflucence page related to each issue. <div>test</div> <br/> Exemple: <br/> > Initiative <br/> ---> Epic Preparation <br/> ------> Task Stakeholders <br/> ------> [...] <br/> ------> Task Architecture <br/> ------> Task Ringi <br/> ------> Task DoR/DoD <br/> ---> Epic Do | [Issue content] |
+
+## Container
+
+```bash
+docker build --tag agile_automate .
+docker run -p 3000:3000 --detach agile_automate
+```
+
+## Source code
+
+### Installation
 
 ```bash
 $ npm install
 ```
 
-## Running the app
+### Running the app
 
 ```bash
 # development
@@ -23,7 +54,7 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Test
+### Test
 
 ```bash
 # unit tests
@@ -36,8 +67,10 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+## Troubleshooting
 
-## License
+Read about troubleshooting.
 
-[MIT license](LICENSE).
+## Contributing
+
+This project welcomes contributions.
