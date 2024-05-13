@@ -39,13 +39,13 @@ jobs:
         run: docker system info | grep -E 'Username|Registry'
         working-directory: .
 
-      - name: Docker login
-        run: echo '${{ secrets.SERVICE_ACCOUNT_KEY }}' | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-        working-directory: .
+      # - name: Docker login
+      #   run: echo '${{ secrets.SERVICE_ACCOUNT_KEY }}' | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+      #   working-directory: .
 
-      - name: Docker test login
-        run: docker system info | grep -E 'Username|Registry'
-        working-directory: .
+      # - name: Docker test login
+      #   run: docker system info | grep -E 'Username|Registry'
+      #   working-directory: .
 
       # - name: 'Build image'
       #   run: docker build . --tag ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }} --build-arg='NODE_ENV=dev'
