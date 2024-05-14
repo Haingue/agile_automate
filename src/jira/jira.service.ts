@@ -5,9 +5,13 @@ import { Issue, JiraApi, RemoteLink } from './types';
 export class JiraService {
   private readonly logger = new Logger(JiraService.name);
 
+  async getStatus(jiraApi: JiraApi): Promise<Response> {
+    return fetch(`${jiraApi.baseUrl}/api/3/serverInfo`);
+  }
+
   async createIssue(issue: Issue, jiraApi: JiraApi): Promise<Issue> {
     this.logger.debug(`Save issue: ${issue.fields.summary}`);
-    let responsePage = await fetch(`${jiraApi.baseUrl}/api/2/issue`, {
+    const responsePage = await fetch(`${jiraApi.baseUrl}/api/2/issue`, {
       method: 'POST',
       headers: {
         Authorization: jiraApi.token,
@@ -30,7 +34,7 @@ export class JiraService {
     jiraApi: JiraApi,
   ): Promise<RemoteLink[]> {
     this.logger.debug(`Get issue links: ${issueId}`);
-    let responsePage = await fetch(
+    const responsePage = await fetch(
       `${jiraApi.baseUrl}/api/2/issue/${issueId}/remotelink`,
       {
         method: 'GET',

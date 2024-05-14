@@ -1,7 +1,3 @@
-/*
-https://docs.nestjs.com/providers#services
-*/
-
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfluenceService } from 'src/confluence/confluence.service';
 import { ConfluenceApi, Content } from 'src/confluence/types';
@@ -20,19 +16,19 @@ export class TmmfService {
   };
 
   private JIRA_API: JiraApi = {
-    baseUrl: 'https://toyota-europe.atlassian.net/rest',
-    token: `Basic ${Buffer.from(
-      `fabien.haingue@toyotafr.com:ATATT3xFfGF04uCS8eEnWbgfrBBIDOvuyNsCYGoggPIcVakEvW4kPkLFG1P0nI7CsPwqFtUrfZBClfpLgktnBUdv8bjz9EMCPv5QnSi1x9Ad7D9kY8TMEL6Z5ADvN_FlXHHfasxHBpcIcINJAMB1ECw_DU0xRMnHryEi1MrmO5nkMKvUGSLIszs=14037330`,
-    ).toString('base64')}`,
-    spaceKey: 'TMMFIS',
+    baseUrl: process.env.JIRA_API,
+    token: `Basic ${Buffer.from(process.env.ATLASSIAN_TOKEN).toString(
+      'base64',
+    )}`,
+    spaceKey: process.env.JIRA_SPACE_KEY,
   };
 
   private CONFLUENCE_API: ConfluenceApi = {
-    baseUrl: 'https://toyota-europe.atlassian.net/wiki/rest',
-    token: `Basic ${Buffer.from(
-      `fabien.haingue@toyotafr.com:ATATT3xFfGF04uCS8eEnWbgfrBBIDOvuyNsCYGoggPIcVakEvW4kPkLFG1P0nI7CsPwqFtUrfZBClfpLgktnBUdv8bjz9EMCPv5QnSi1x9Ad7D9kY8TMEL6Z5ADvN_FlXHHfasxHBpcIcINJAMB1ECw_DU0xRMnHryEi1MrmO5nkMKvUGSLIszs=14037330`,
-    ).toString('base64')}`,
-    spaceKey: 'TMMFIS',
+    baseUrl: process.env.CONFLUENCE_API,
+    token: `Basic ${Buffer.from(process.env.ATLASSIAN_TOKEN).toString(
+      'base64',
+    )}`,
+    spaceKey: process.env.CONFLUENCE_SPACE_KEY,
   };
 
   @Inject()
@@ -113,7 +109,7 @@ export class TmmfService {
   }
 
   private async createProjectOnConfluence(title: string): Promise<Content> {
-    let projectTemplate = await this.confluenceService.getTemplate(
+    const projectTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.projectTemplateId,
       this.CONFLUENCE_API,
     );
@@ -136,7 +132,7 @@ export class TmmfService {
   }
 
   private async createDocumentOnConfluence(project: Content): Promise<Content> {
-    let documentTemplate = await this.confluenceService.getTemplate(
+    const documentTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.documentTemplateId,
       this.CONFLUENCE_API,
     );
@@ -161,7 +157,7 @@ export class TmmfService {
     title: string,
     project: Content,
   ): Promise<Content> {
-    let initiativeTemplate = await this.confluenceService.getTemplate(
+    const initiativeTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.initiativeTemplateId,
       this.CONFLUENCE_API,
     );
@@ -194,7 +190,7 @@ export class TmmfService {
   private async createPreparationOnConfluence(
     initiative: Content,
   ): Promise<Content> {
-    let preparationTemplate = await this.confluenceService.getTemplate(
+    const preparationTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.preparationTemplateId,
       this.CONFLUENCE_API,
     );
@@ -216,7 +212,7 @@ export class TmmfService {
   }
 
   private async createDoOnConfluence(initiative: Content): Promise<Content> {
-    let doTemplate = await this.confluenceService.getTemplate(
+    const doTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.doTemplateId,
       this.CONFLUENCE_API,
     );

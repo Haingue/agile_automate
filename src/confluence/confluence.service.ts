@@ -1,7 +1,3 @@
-/*
-https://docs.nestjs.com/providers#services
-*/
-
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfluenceApi, Content, ContentType } from './types';
 
@@ -9,12 +5,16 @@ import { ConfluenceApi, Content, ContentType } from './types';
 export class ConfluenceService {
   private readonly logger = new Logger(ConfluenceService.name);
 
+  async getStatus(confluenceApi: ConfluenceApi): Promise<Response> {
+    return fetch(`${confluenceApi.baseUrl}/applinks/1.0/manifest`);
+  }
+
   async getTemplate(
-    templateId: Number,
+    templateId: number,
     confluenceApi: ConfluenceApi,
   ): Promise<Content> {
     this.logger.debug(`Load template: ${templateId}`);
-    let responseTemplate = await fetch(
+    const responseTemplate = await fetch(
       `${confluenceApi.baseUrl}/api/template/${templateId}?expand=body.storage`,
       {
         headers: {
@@ -32,11 +32,11 @@ export class ConfluenceService {
   }
 
   async getOnePage(
-    pageId: Number,
+    pageId: number,
     confluenceApi: ConfluenceApi,
   ): Promise<Content> {
     this.logger.debug(`Load page: ${pageId}`);
-    let responsePage = await fetch(
+    const responsePage = await fetch(
       `${confluenceApi.baseUrl}/api/content?expand=body.storage&id=${pageId}`,
       {
         headers: {
@@ -63,7 +63,7 @@ export class ConfluenceService {
     page.space = {
       key: confluenceApi.spaceKey,
     };
-    let responsePage = await fetch(`${confluenceApi.baseUrl}/api/content`, {
+    const responsePage = await fetch(`${confluenceApi.baseUrl}/api/content`, {
       method: 'POST',
       headers: {
         Authorization: confluenceApi.token,
