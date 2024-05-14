@@ -16,8 +16,6 @@ env:
 jobs:
   analyze:
     uses: ./.github/workflows/analyze.yml
-    with:
-      bucketFolder: main
 
   build-push-artifact:
     runs-on: ubuntu-latest
