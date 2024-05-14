@@ -15,10 +15,11 @@ env:
 
 jobs:
   analyze:
-    uses: ./analyze.yml
+    uses: ./.github/workflows/analyze.yml
+      with:
+          bucketFolder: staging
 
   build-push-artifact:
-    #needs: analyze
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
