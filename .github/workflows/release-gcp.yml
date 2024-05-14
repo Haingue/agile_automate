@@ -15,7 +15,7 @@ env:
 
 jobs:
   analyze:
-    uses: .github/workflows/analyze.yml@main
+    uses: ./analyze.yml@main
 
   build-push-artifact:
     #needs: analyze
