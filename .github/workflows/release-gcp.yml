@@ -16,8 +16,8 @@ env:
 jobs:
   analyze:
     uses: ./.github/workflows/analyze.yml
-      with:
-          bucketFolder: staging
+    with:
+      bucketFolder: staging
 
   build-push-artifact:
     runs-on: ubuntu-latest
