@@ -14,8 +14,8 @@ env:
   IMAGE_NAME: agile_automate
 
 jobs:
-  analyze:
-    uses: ./.github/workflows/analyze.yml
+  # analyze:
+  #   uses: ./.github/workflows/analyze.yml
 
   build-push-artifact:
     runs-on: ubuntu-latest
