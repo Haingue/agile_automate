@@ -10,7 +10,7 @@ on:
 env:
   PROJECT_ID: agile-420314
   REGION: europe-west1
-  GAR_LOCATION: europe-west1-docker.pkg.dev/agile-420314/personal-project
+  GAR_LOCATION: europe-west1-docker.pkg.dev/agile-420314/agile
   IMAGE_NAME: agile_automate
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
     uses: .github/workflows/analyze.yml@main
 
   build-push-artifact:
-    needs: analyze
+    #needs: analyze
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
