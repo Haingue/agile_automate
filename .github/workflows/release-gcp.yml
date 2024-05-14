@@ -15,7 +15,7 @@ env:
 
 jobs:
   analyze:
-    uses: ./analyze.yml@main
+    uses: ./analyze.yml
 
   build-push-artifact:
     #needs: analyze
