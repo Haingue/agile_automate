@@ -78,6 +78,21 @@ export class TmmfService {
     this.createInitiativeOnConfluence(initiative.fields.summary, projectPage);
 
     // TODO add Preparation Epic issues (Jira)
+    // const epicPreparation: Issue = {
+    //   id: null,
+    //   key: null,
+    //   fields: {
+    //     parent: {
+    //       id: initiative.id,
+    //       key: initiative.key,
+    //     },
+    //     project: {
+    //       id: null,
+    //       key: null,
+    //       // key: projectId,
+    //     },
+    //   },
+    // };
     // Then add Tasks issues (Jira)
 
     // TODO add Do Epic issues (Jira)
