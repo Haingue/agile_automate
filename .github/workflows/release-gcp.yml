@@ -1,0 +1,62 @@
+name: Release to GCP
+
+on:
+  push:
+    branches: ['main']
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+
+env:
+  PROJECT_ID: agile-420314
+  REGION: europe-west1
+  GAR_LOCATION: europe-west1-docker.pkg.dev/agile-420314/agile
+  IMAGE_NAME: agile_automate
+
+jobs:
+  analyze:
+    uses: .github/workflows/analyze.yml@main
+
+  build-push-artifact:
+    #needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v3'
+
+      - id: 'Authentication'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.SERVICE_ACCOUNT_KEY }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+
+      - name: Docker auth
+        run: |-
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Docker test login
+        run: docker system info | grep -E 'Username|Registry'
+        working-directory: .
+
+      - id: extract-version
+        name: Extract version and set it to TAG env var
+        run: |
+          echo ::set-output name=version::$(jq -r '.version' package.json)
+
+      - id: docker-build-push-tagged
+        name: Build and Tag Docker image and push to Google Artifact Registry
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          build-args: NODE_ENV=dev
+          tags: |
+            ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:${{ steps.extract-version.outputs.version }}
+            ${{ env.GAR_LOCATION }}/${{ env.IMAGE_NAME }}:latest
+          push: true
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
