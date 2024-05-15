@@ -1,7 +1,8 @@
 export type JiraApi = {
   baseUrl: string;
   token: string;
-  spaceKey: string;
+  businessPlanSpaceKey: string;
+  projectSpaceKey: string;
 };
 
 export interface Status {
@@ -30,7 +31,7 @@ export interface Priority {
 
 export interface Issuetype {
   self?: string;
-  id: string;
+  id: number;
   description?: string;
   iconUrl?: string;
   name?: string;
