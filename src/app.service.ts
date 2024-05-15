@@ -42,7 +42,8 @@ export class AppService {
     const response: Response = await this.jiraService.getStatus({
       baseUrl: `${process.env.JIRA_API}`,
       token: null,
-      spaceKey: null,
+      businessPlanSpaceKey: null,
+      projectSpaceKey: null,
     });
     if (response.status === 200) {
       return 1;

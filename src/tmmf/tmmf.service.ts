@@ -16,15 +16,16 @@ export class TmmfService {
   };
 
   private JIRA_API: JiraApi = {
-    baseUrl: process.env.JIRA_API,
+    baseUrl: process.env.JIRA_BASEURL,
     token: `Basic ${Buffer.from(process.env.ATLASSIAN_TOKEN).toString(
       'base64',
     )}`,
-    spaceKey: process.env.JIRA_SPACE_KEY,
+    businessPlanSpaceKey: process.env.JIRA_BUSINESS_PLAN_SPACE_KEY,
+    projectSpaceKey: process.env.JIRA_PROJECT_SPACE_KEY,
   };
 
   private CONFLUENCE_API: ConfluenceApi = {
-    baseUrl: process.env.CONFLUENCE_API,
+    baseUrl: process.env.CONFLUENCE_BASEURL,
     token: `Basic ${Buffer.from(process.env.ATLASSIAN_TOKEN).toString(
       'base64',
     )}`,
@@ -41,8 +42,8 @@ export class TmmfService {
    * Method to create Issue on Jira Cloud with the type inititive.
    * @param canvas
    */
-  async approveCanvas(canvas: Content): Promise<void> {
-    this.createProjectInitiativeOnJira(canvas);
+  async approveCanvas(canvas: Content): Promise<Issue> {
+    return this.createProjectInitiativeOnJira(canvas);
   }
 
   /**
@@ -98,26 +99,34 @@ export class TmmfService {
     // TODO add Do Epic issues (Jira)
   }
 
-  private async createProjectInitiativeOnJira(canvas: Content): Promise<Issue> {
-    if (canvas.title) throw new BadRequestException();
-    const parentkey = '';
-    if (parentkey.length === 0)
+  private createProjectInitiativeOnJira(canvas: Content): Promise<Issue> {
+    if (!canvas.title)
+      throw new BadRequestException('No title found in the content');
+    const parentkeys: string[] = /\[[a-zA-Z0-9]{6}-[0-9]+\]/.exec(
+      canvas.body.storage.value,
+    );
+    if (parentkeys.length === 0)
       throw new BadRequestException('Parent id not found');
+    const parentkey: string = parentkeys[0].slice(1, -1);
+    if (parentkey.length === 0)
+      throw new BadRequestException('Parent id is invalid');
     const initiative: Issue = {
       id: null,
       key: null,
       fields: {
         summary: canvas.title,
-        status: {
-          id: '10756',
-          name: 'Backlog',
+        issuetype: {
+          id: 12206,
+          name: 'Initiative',
         },
         project: {
-          id: '22814',
-          key: 'TMMFBP',
-          name: 'TMMF-BP',
+          id: null,
+          key: this.JIRA_API.businessPlanSpaceKey,
         },
         parent: { id: null, key: parentkey },
+        assignee: {
+          accountId: null,
+        },
       },
     };
     return this.jiraService.createIssue(initiative, this.JIRA_API);

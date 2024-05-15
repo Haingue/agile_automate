@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfluenceApi, Content, ContentType } from './types';
 
 @Injectable()
@@ -63,6 +63,10 @@ export class ConfluenceService {
     page.space = {
       key: confluenceApi.spaceKey,
     };
+    if (!page.metadata.labels) {
+      page.metadata.labels = [];
+    }
+    page.metadata.labels.push('agile_automate');
     const responsePage = await fetch(`${confluenceApi.baseUrl}/api/content`, {
       method: 'POST',
       headers: {
@@ -72,10 +76,11 @@ export class ConfluenceService {
       },
       body: JSON.stringify(page),
     });
-    if (responsePage.status !== 200) {
+    if (responsePage.status !== 201) {
       const result = await responsePage.json();
-      throw new Error(
+      throw new HttpException(
         `Error to save page[${responsePage.status}]: ${JSON.stringify(result)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
     return responsePage.json();
