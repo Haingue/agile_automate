@@ -37,7 +37,7 @@ export class ConfluenceService {
   ): Promise<Content> {
     this.logger.debug(`Load page: ${pageId}`);
     const responsePage = await fetch(
-      `${confluenceApi.baseUrl}/api/content?expand=body.storage&id=${pageId}`,
+      `${confluenceApi.baseUrl}/api/content/${pageId}?expand=body.storage&id=${pageId}`,
       {
         headers: {
           Authorization: confluenceApi.token,
@@ -63,10 +63,13 @@ export class ConfluenceService {
     page.space = {
       key: confluenceApi.spaceKey,
     };
-    if (!page.metadata.labels) {
-      page.metadata.labels = [];
-    }
-    page.metadata.labels.push('agile_automate');
+    // if (!page.metadata) {
+    //   page.metadata = {};
+    // }
+    // if (!page.metadata.labels) {
+    //   page.metadata.labels = [];
+    // }
+    // page.metadata.labels.push('agile_automate');
     const responsePage = await fetch(`${confluenceApi.baseUrl}/api/content`, {
       method: 'POST',
       headers: {
@@ -76,7 +79,7 @@ export class ConfluenceService {
       },
       body: JSON.stringify(page),
     });
-    if (responsePage.status !== 201) {
+    if (responsePage.status !== 200) {
       const result = await responsePage.json();
       throw new HttpException(
         `Error to save page[${responsePage.status}]: ${JSON.stringify(result)}`,

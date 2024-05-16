@@ -30,7 +30,7 @@ async function bootstrap() {
   );
   logger.debug(`JIRA_PROJECT_SPACE_KEY: ${process.env.JIRA_PROJECT_SPACE_KEY}`);
   logger.debug(`CONFLUENCE_BASEURL: ${process.env.CONFLUENCE_BASEURL}`);
-  logger.debug(`CONFLUENCE_SPACEKEY: ${process.env.CONFLUENCE_SPACEKEY}`);
+  logger.debug(`CONFLUENCE_SPACE_KEY: ${process.env.CONFLUENCE_SPACE_KEY}`);
   logger.debug(`ATLASSIAN_TOKEN: ${process.env.ATLASSIAN_TOKEN}`);
   await app.listen(3000);
 }

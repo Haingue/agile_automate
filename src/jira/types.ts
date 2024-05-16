@@ -39,6 +39,13 @@ export interface Issuetype {
   avatarId?: number;
   hierarchyLevel?: number;
 }
+export enum IssueTypeId {
+  taskIssueType = 12393, // Task
+  storyIssueType = 12406, // Story
+  epicIssueType = 12262, // Epic
+  initiativeIssueType = 12206, // Initiative
+  themeIssueType = 12262, // Theme
+}
 
 export interface Assignee {
   accountId: string;
