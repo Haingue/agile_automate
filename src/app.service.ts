@@ -40,7 +40,7 @@ export class AppService {
 
   async testJiraStatus(): Promise<number> {
     const response: Response = await this.jiraService.getStatus({
-      baseUrl: `${process.env.JIRA_API}`,
+      baseUrl: `${process.env.JIRA_BASEURL}`,
       token: null,
       businessPlanSpaceKey: null,
       projectSpaceKey: null,
@@ -53,7 +53,7 @@ export class AppService {
 
   async testConfluenceStatus(): Promise<number> {
     const response: Response = await this.confluenceService.getStatus({
-      baseUrl: `${process.env.JIRA_API}`,
+      baseUrl: `${process.env.JIRA_BASEURL}`,
       token: null,
       spaceKey: null,
     });

@@ -17,9 +17,9 @@ COPY --chown=node:node package*.json ./
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node . .
 # ENV ATLASSIAN_TOKEN ''
-# ENV CONFLUENCE_API ''
+# ENV CONFLUENCE_BASEURL ''
 # ENV CONFLUENCE_SPACE_KEY ''
-# ENV JIRA_API ''
+# ENV JIRA_BASEURL ''
 # ENV JIRA_SPACE_KEY ''
 RUN npm run build
 ENV NODE_ENV production

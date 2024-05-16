@@ -1,9 +1,15 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { ConfluenceService } from 'src/confluence/confluence.service';
 import { ConfluenceApi, Content } from 'src/confluence/types';
 import { Properties } from './types';
 import { JiraService } from 'src/jira/jira.service';
-import { Issue, JiraApi, RemoteLink } from 'src/jira/types';
+import { Issue, IssueTypeId, JiraApi, RemoteLink } from 'src/jira/types';
 
 @Injectable()
 export class TmmfService {
@@ -57,13 +63,19 @@ export class TmmfService {
    *  - Page: Projects > {Theme} > {Initiative} > {Epic}
    * @param initiative
    */
-  async putProjectInBacklog(initiative: Issue): Promise<void> {
+  async putProjectInBacklog(initiative: Issue): Promise<any> {
+    if (!initiative.fields.parent) {
+      throw new HttpException(
+        'The initiative must hae a parent',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const remotelinks: RemoteLink[] = await this.jiraService.getRemoteLink(
-      initiative.id,
+      initiative.fields.parent.id,
       this.JIRA_API,
     );
     const projectId: RemoteLink = remotelinks
-      .filter((remotelink) => remotelink.relationship === 'Wiki Page')
+      .filter((remotelink) => remotelink.application.name === 'Confluence')
       .shift();
     let projectPage: Content;
     if (projectId) {
@@ -71,32 +83,91 @@ export class TmmfService {
         parseInt(projectId.object.url.split(/.*=/)[1]),
         this.CONFLUENCE_API,
       );
-    } else {
+    }
+    if (!projectPage) {
       projectPage = await this.createProjectOnConfluence(
         initiative.fields.parent.fields.summary,
       );
     }
-    this.createInitiativeOnConfluence(initiative.fields.summary, projectPage);
+    const initiativePage: Content = await this.createInitiativeOnConfluence(
+      initiative.fields.summary,
+      projectPage,
+    );
 
-    // TODO add Preparation Epic issues (Jira)
-    // const epicPreparation: Issue = {
-    //   id: null,
-    //   key: null,
-    //   fields: {
-    //     parent: {
-    //       id: initiative.id,
-    //       key: initiative.key,
-    //     },
-    //     project: {
-    //       id: null,
-    //       key: null,
-    //       // key: projectId,
-    //     },
-    //   },
-    // };
-    // Then add Tasks issues (Jira)
+    let preparationEpic: Issue = {
+      id: null,
+      key: null,
+      fields: {
+        issuetype: {
+          id: IssueTypeId.epicIssueType,
+        },
+        summary: `${this._summarizeTitle(initiative.fields.summary)} - Preparation`,
+        parent: {
+          id: initiative.id,
+          key: initiative.key,
+        },
+        project: {
+          id: null,
+          key: this.JIRA_API.businessPlanSpaceKey,
+        },
+      },
+    };
+    preparationEpic = await this.jiraService.createIssue(
+      preparationEpic,
+      this.JIRA_API,
+    );
+    const preparationTasks = [];
+    for (const task in [
+      'Stakeholder identification',
+      'Valid architecture',
+      'DoR/DoD',
+    ]) {
+      const taskIssue: Issue = {
+        id: null,
+        key: null,
+        fields: {
+          issuetype: {
+            id: IssueTypeId.taskIssueType,
+          },
+          summary: `${this._summarizeTitle(initiative.fields.summary)} - ${task}`,
+          parent: {
+            id: preparationEpic.id,
+            key: preparationEpic.key,
+          },
+          project: {
+            id: null,
+            key: this.JIRA_API.businessPlanSpaceKey,
+          },
+        },
+      };
+      preparationTasks.push(
+        await this.jiraService.createIssue(taskIssue, this.JIRA_API),
+      );
+    }
 
-    // TODO add Do Epic issues (Jira)
+    let doEpic: Issue = {
+      id: null,
+      key: null,
+      fields: {
+        issuetype: {
+          id: IssueTypeId.epicIssueType,
+        },
+        summary: `${this._summarizeTitle(initiative.fields.summary)} - Do`,
+        parent: {
+          id: initiative.id,
+          key: initiative.key,
+        },
+        project: {
+          id: null,
+          key: this.JIRA_API.businessPlanSpaceKey,
+        },
+      },
+    };
+    doEpic = await this.jiraService.createIssue(doEpic, this.JIRA_API);
+    return {
+      pages: [initiativePage],
+      issues: [preparationEpic, ...preparationTasks, doEpic],
+    };
   }
 
   private createProjectInitiativeOnJira(canvas: Content): Promise<Issue> {
@@ -116,8 +187,7 @@ export class TmmfService {
       fields: {
         summary: canvas.title,
         issuetype: {
-          id: 12206,
-          name: 'Initiative',
+          id: IssueTypeId.initiativeIssueType,
         },
         project: {
           id: null,
@@ -187,6 +257,7 @@ export class TmmfService {
     );
     let initiativePage: Content = {
       title: `${project.title} - ${title}`,
+      space: { key: this.CONFLUENCE_API.spaceKey },
       body: {
         storage: {
           value: initiativeTemplate.body.storage.value,
@@ -220,6 +291,7 @@ export class TmmfService {
     );
     let preparationPage: Content = {
       title: `[${this._summarizeTitle(initiative.title)}] - Preparation`,
+      space: { key: this.CONFLUENCE_API.spaceKey },
       body: {
         storage: {
           value: preparationTemplate.body.storage.value,
@@ -241,7 +313,8 @@ export class TmmfService {
       this.CONFLUENCE_API,
     );
     let doPage: Content = {
-      title: `[${this._summarizeTitle(initiative.title)}] - do`,
+      title: `[${this._summarizeTitle(initiative.title)}] - Do`,
+      space: { key: this.CONFLUENCE_API.spaceKey },
       body: {
         storage: {
           value: doTemplate.body.storage.value,
