@@ -112,7 +112,11 @@ export class TmmfService {
       );
     }
     if (!projectPage) {
-      projectPage = await this.createProjectOnConfluence(initiative);
+      const themeIssue: Issue = await this.jiraService.getOneIssue(
+        initiative.fields.parent.key,
+        this.JIRA_API,
+      );
+      projectPage = await this.createProjectOnConfluence(themeIssue);
     }
 
     const initiativePage: Content = await this.createInitiativeOnConfluence(
@@ -270,7 +274,7 @@ export class TmmfService {
     return this.jiraService.createIssue(initiative, this.JIRA_API);
   }
 
-  private async createProjectOnConfluence(initiative: Issue): Promise<Content> {
+  private async createProjectOnConfluence(themeIssue: Issue): Promise<Content> {
     const projectTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.projectTemplateId,
       this.CONFLUENCE_API,
@@ -278,10 +282,10 @@ export class TmmfService {
     projectTemplate.body.storage.value =
       projectTemplate.body.storage.value.replaceAll(
         'https://toyota-europe.atlassian.net/browse/TMMFITD-1',
-        `https://toyota-europe.atlassian.net/browse/${initiative.key}`,
+        `https://toyota-europe.atlassian.net/browse/${themeIssue.key}`,
       );
     let projectPage: Content = {
-      title: initiative.fields.parent.fields.summary,
+      title: themeIssue.fields.summary,
       body: {
         storage: {
           value: projectTemplate.body.storage.value,
