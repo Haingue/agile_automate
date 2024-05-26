@@ -190,8 +190,14 @@ export class TmmfService {
       this.JIRA_API,
     );
     preparationEpic.fields = {
-      parent: null,
-      project: null,
+      parent: {
+        id: initiative.id,
+        key: initiative.key,
+      },
+      project: {
+        id: null,
+        key: this.JIRA_API.projectSpaceKey,
+      },
       subtasks: [],
     };
     for (const task of [
