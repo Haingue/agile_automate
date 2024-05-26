@@ -66,34 +66,83 @@ export class TmmfService {
   async putProjectInBacklog(initiative: Issue): Promise<any> {
     if (!initiative.fields.parent) {
       throw new HttpException(
-        'The initiative must hae a parent',
+        'The initiative must have a parent',
         HttpStatus.BAD_REQUEST,
       );
     }
-    const remotelinks: RemoteLink[] = await this.jiraService.getRemoteLink(
-      initiative.fields.parent.id,
-      this.JIRA_API,
-    );
-    const projectId: RemoteLink = remotelinks
-      .filter((remotelink) => remotelink.application.name === 'Confluence')
-      .shift();
+
+    // Create Jira issues on TMMF - IT&D
+    const preparationEpic: Issue =
+      await this.createPreparationOnJira(initiative);
+    initiative.fields.subtasks.push(preparationEpic);
+    let doEpic: Issue = await this.createDoOnJira(initiative);
+    initiative.fields.subtasks.push(doEpic);
+
+    // Create Confluence pages (Theme > Initiative > Epic & Documentation)
+    const projectId: number = await this.getProjectId(initiative);
     let projectPage: Content;
     if (projectId) {
       projectPage = await this.confluenceService.getOnePage(
-        parseInt(projectId.object.url.split(/.*=/)[1]),
+        projectId,
         this.CONFLUENCE_API,
       );
     }
     if (!projectPage) {
-      projectPage = await this.createProjectOnConfluence(
-        initiative.fields.parent.fields.summary,
-      );
+      projectPage = await this.createProjectOnConfluence(initiative);
     }
+
     const initiativePage: Content = await this.createInitiativeOnConfluence(
-      initiative.fields.summary,
+      initiative,
       projectPage,
     );
 
+    return {
+      pages: [initiativePage],
+      issues: [preparationEpic, doEpic],
+    };
+  }
+
+  private async getProjectId(initiative: Issue): Promise<number> {
+    const remotelinks: RemoteLink[] = await this.jiraService.getRemoteLink(
+      initiative.fields.parent.id,
+      this.JIRA_API,
+    );
+    const projectIdLink: RemoteLink = remotelinks
+      .filter((remotelink) => remotelink.application.name === 'Confluence')
+      .shift();
+
+    try {
+      const projectId: string = projectIdLink.object.url.split(/.*=/)[1];
+      return parseInt(projectId);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private async createDoOnJira(initiative: Issue): Promise<Issue> {
+    let doEpic: Issue = {
+      id: null,
+      key: null,
+      fields: {
+        issuetype: {
+          id: IssueTypeId.epicIssueType,
+        },
+        summary: `${this._summarizeTitle(initiative.fields.summary)} - Do`,
+        parent: {
+          id: initiative.id,
+          key: initiative.key,
+        },
+        project: {
+          id: null,
+          key: this.JIRA_API.projectSpaceKey,
+        },
+      },
+    };
+    doEpic = await this.jiraService.createIssue(doEpic, this.JIRA_API);
+    return doEpic;
+  }
+
+  private async createPreparationOnJira(initiative: Issue): Promise<Issue> {
     let preparationEpic: Issue = {
       id: null,
       key: null,
@@ -108,7 +157,7 @@ export class TmmfService {
         },
         project: {
           id: null,
-          key: this.JIRA_API.businessPlanSpaceKey,
+          key: this.JIRA_API.projectSpaceKey,
         },
       },
     };
@@ -116,11 +165,18 @@ export class TmmfService {
       preparationEpic,
       this.JIRA_API,
     );
-    const preparationTasks = [];
     for (const task in [
       'Stakeholder identification',
-      'Valid architecture',
-      'DoR/DoD',
+      'Clarify the project requirement',
+      'Define ASTG/ATPSG compliance',
+      'Define RGPD compliance',
+      'Define network specification',
+      'Define hardware specification',
+      'Create architecture',
+      'Create a PoC',
+      'Valid Ringi',
+      'Define DoR',
+      'Define DoD',
     ]) {
       const taskIssue: Issue = {
         id: null,
@@ -136,38 +192,15 @@ export class TmmfService {
           },
           project: {
             id: null,
-            key: this.JIRA_API.businessPlanSpaceKey,
+            key: this.JIRA_API.projectSpaceKey,
           },
         },
       };
-      preparationTasks.push(
+      preparationEpic.fields.subtasks.push(
         await this.jiraService.createIssue(taskIssue, this.JIRA_API),
       );
     }
-
-    let doEpic: Issue = {
-      id: null,
-      key: null,
-      fields: {
-        issuetype: {
-          id: IssueTypeId.epicIssueType,
-        },
-        summary: `${this._summarizeTitle(initiative.fields.summary)} - Do`,
-        parent: {
-          id: initiative.id,
-          key: initiative.key,
-        },
-        project: {
-          id: null,
-          key: this.JIRA_API.businessPlanSpaceKey,
-        },
-      },
-    };
-    doEpic = await this.jiraService.createIssue(doEpic, this.JIRA_API);
-    return {
-      pages: [initiativePage],
-      issues: [preparationEpic, ...preparationTasks, doEpic],
-    };
+    return preparationEpic;
   }
 
   private createProjectInitiativeOnJira(canvas: Content): Promise<Issue> {
@@ -202,13 +235,18 @@ export class TmmfService {
     return this.jiraService.createIssue(initiative, this.JIRA_API);
   }
 
-  private async createProjectOnConfluence(title: string): Promise<Content> {
+  private async createProjectOnConfluence(initiative: Issue): Promise<Content> {
     const projectTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.projectTemplateId,
       this.CONFLUENCE_API,
     );
+    projectTemplate.body.storage.value =
+      projectTemplate.body.storage.value.replaceAll(
+        'https://toyota-europe.atlassian.net/browse/TMMFITD-1',
+        `https://toyota-europe.atlassian.net/browse/${initiative.key}`,
+      );
     let projectPage: Content = {
-      title: title,
+      title: initiative.fields.parent.fields.summary,
       body: {
         storage: {
           value: projectTemplate.body.storage.value,
@@ -248,7 +286,7 @@ export class TmmfService {
   }
 
   private async createInitiativeOnConfluence(
-    title: string,
+    initiative: Issue,
     project: Content,
   ): Promise<Content> {
     const initiativeTemplate = await this.confluenceService.getTemplate(
@@ -256,7 +294,7 @@ export class TmmfService {
       this.CONFLUENCE_API,
     );
     let initiativePage: Content = {
-      title: `${project.title} - ${title}`,
+      title: `${project.title} - ${initiative.fields.summary}`,
       space: { key: this.CONFLUENCE_API.spaceKey },
       body: {
         storage: {
@@ -270,8 +308,11 @@ export class TmmfService {
       initiativePage,
       this.CONFLUENCE_API,
     );
-    this.createPreparationOnConfluence(initiativePage);
-    this.createDoOnConfluence(initiativePage);
+    this.createPreparationOnConfluence(
+      initiative.fields.subtasks[0],
+      initiativePage,
+    );
+    this.createDoOnConfluence(initiative.fields.subtasks[1], initiativePage);
     return initiativePage;
   }
 
@@ -283,14 +324,20 @@ export class TmmfService {
   }
 
   private async createPreparationOnConfluence(
-    initiative: Content,
+    preparationIssue: Issue,
+    initiativePage: Content,
   ): Promise<Content> {
     const preparationTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.preparationTemplateId,
       this.CONFLUENCE_API,
     );
+    preparationTemplate.body.storage.value =
+      preparationTemplate.body.storage.value.replaceAll(
+        'parent = TMMFITD-1',
+        `parent = ${preparationIssue.key}`,
+      );
     let preparationPage: Content = {
-      title: `[${this._summarizeTitle(initiative.title)}] - Preparation`,
+      title: `[${this._summarizeTitle(initiativePage.title)}] - Preparation`,
       space: { key: this.CONFLUENCE_API.spaceKey },
       body: {
         storage: {
@@ -298,7 +345,7 @@ export class TmmfService {
           representation: 'storage',
         },
       },
-      ancestors: [initiative],
+      ancestors: [initiativePage],
     };
     preparationPage = await this.confluenceService.savePage(
       preparationPage,
@@ -307,13 +354,20 @@ export class TmmfService {
     return preparationPage;
   }
 
-  private async createDoOnConfluence(initiative: Content): Promise<Content> {
+  private async createDoOnConfluence(
+    doIssue: Issue,
+    initiativePage: Content,
+  ): Promise<Content> {
     const doTemplate = await this.confluenceService.getTemplate(
       this.tmmfProperties.doTemplateId,
       this.CONFLUENCE_API,
     );
+    doTemplate.body.storage.value = doTemplate.body.storage.value.replaceAll(
+      'parent = TMMFITD-1',
+      `parent = ${doIssue.key}`,
+    );
     let doPage: Content = {
-      title: `[${this._summarizeTitle(initiative.title)}] - Do`,
+      title: `[${this._summarizeTitle(initiativePage.title)}] - Do`,
       space: { key: this.CONFLUENCE_API.spaceKey },
       body: {
         storage: {
@@ -321,7 +375,7 @@ export class TmmfService {
           representation: 'storage',
         },
       },
-      ancestors: [initiative],
+      ancestors: [initiativePage],
     };
     doPage = await this.confluenceService.savePage(doPage, this.CONFLUENCE_API);
     return doPage;

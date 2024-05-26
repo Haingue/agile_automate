@@ -22,8 +22,10 @@ export class TmmfController {
   }
 
   @Post('start-project')
-  putProjectInBacklog(@Body() inititativeIssue: Issue) {
+  putProjectInBacklog(@Body() inititativeIssue: Issue): Promise<any> {
     this.logger.log(`New project canva approve: ${inititativeIssue.key}`);
-    this.tmmfService.putProjectInBacklog(inititativeIssue);
+    const result: Promise<any> =
+      this.tmmfService.putProjectInBacklog(inititativeIssue);
+    return result;
   }
 }

@@ -40,11 +40,11 @@ export interface Issuetype {
   hierarchyLevel?: number;
 }
 export enum IssueTypeId {
-  taskIssueType = 12393, // Task
-  storyIssueType = 12406, // Story
-  epicIssueType = 12262, // Epic
+  taskIssueType = 3, // Task
+  storyIssueType = 24, // Story
+  epicIssueType = 23, // Epic
   initiativeIssueType = 12206, // Initiative
-  themeIssueType = 12262, // Theme
+  themeIssueType = 12264, // Theme
 }
 
 export interface Assignee {

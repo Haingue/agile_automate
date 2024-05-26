@@ -57,7 +57,7 @@ export class ConfluenceService {
     page: Content,
     confluenceApi: ConfluenceApi,
   ): Promise<Content> {
-    this.logger.debug(`Save page: ${JSON.stringify(page)}`);
+    this.logger.debug(`Save page: ${page.title}`);
     page.type = ContentType.page;
     page.status = 'draft';
     page.space = {
