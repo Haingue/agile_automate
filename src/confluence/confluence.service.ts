@@ -59,17 +59,10 @@ export class ConfluenceService {
   ): Promise<Content> {
     this.logger.debug(`Save page: ${page.title}`);
     page.type = ContentType.page;
-    page.status = 'draft';
+    // page.status = 'draft';
     page.space = {
       key: confluenceApi.spaceKey,
     };
-    // if (!page.metadata) {
-    //   page.metadata = {};
-    // }
-    // if (!page.metadata.labels) {
-    //   page.metadata.labels = [];
-    // }
-    // page.metadata.labels.push('agile_automate');
     const responsePage = await fetch(`${confluenceApi.baseUrl}/api/content`, {
       method: 'POST',
       headers: {
