@@ -45,7 +45,19 @@ export class TmmfService {
   confluenceService: ConfluenceService;
 
   /**
-   * Method to create Issue on Jira Cloud with the type inititive.
+   * Method to create Issue on Jira Cloud with the type inititive from canvas page id.
+   * @param canvas
+   */
+  async approveCanvasByPageId(pageId: number): Promise<Issue> {
+    const canvas = await this.confluenceService.getOnePage(
+      pageId,
+      this.CONFLUENCE_API,
+    );
+    return this.createProjectInitiativeOnJira(canvas);
+  }
+
+  /**
+   * Method to create Issue on Jira Cloud with the type inititive from canvas page.
    * @param canvas
    */
   async approveCanvas(canvas: Content): Promise<Issue> {
@@ -63,7 +75,19 @@ export class TmmfService {
    *  - Page: Projects > {Theme} > {Initiative} > {Epic}
    * @param initiative
    */
+  async putProjectInBacklogByIssueKey(issueKey: string): Promise<any> {
+    const initiative: Issue = await this.jiraService.getOneIssue(
+      issueKey,
+      this.JIRA_API,
+    );
+    return this.startProject(initiative);
+  }
+
   async putProjectInBacklog(initiative: Issue): Promise<any> {
+    return this.startProject(initiative);
+  }
+
+  async startProject(initiative: Issue): Promise<any> {
     if (!initiative.fields.parent) {
       throw new HttpException(
         'The initiative must have a parent',

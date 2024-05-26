@@ -59,4 +59,17 @@ export class JiraService {
     }
     return responsePage.json();
   }
+
+  async getOneIssue(issueId: string, jiraApi: JiraApi): Promise<Issue> {
+    const response: Response = await fetch(
+      `${jiraApi.baseUrl}/api/2/issue/${issueId}`,
+    );
+
+    if (response.status !== 200) {
+      console.error('Error to retrieve the content of the issue');
+      throw new Error(`Issue not found: ${issueId}`);
+    }
+    const issue: Issue = await response.json();
+    return issue;
+  }
 }
