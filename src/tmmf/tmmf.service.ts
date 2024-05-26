@@ -189,7 +189,12 @@ export class TmmfService {
       preparationEpic,
       this.JIRA_API,
     );
-    for (const task in [
+    preparationEpic.fields = {
+      parent: null,
+      project: null,
+      subtasks: [],
+    };
+    for (const task of [
       'Stakeholder identification',
       'Clarify the project requirement',
       'Define ASTG/ATPSG compliance',
