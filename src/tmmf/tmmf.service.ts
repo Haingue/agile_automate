@@ -99,7 +99,7 @@ export class TmmfService {
     const preparationEpic: Issue =
       await this.createPreparationOnJira(initiative);
     initiative.fields.subtasks.push(preparationEpic);
-    let doEpic: Issue = await this.createDoOnJira(initiative);
+    const doEpic: Issue = await this.createDoOnJira(initiative);
     initiative.fields.subtasks.push(doEpic);
 
     // Create Confluence pages (Theme > Initiative > Epic & Documentation)
@@ -248,10 +248,10 @@ export class TmmfService {
     const parentkeys: string[] = /\[[a-zA-Z0-9]{6}-[0-9]+\]/.exec(
       canvas.body.storage.value,
     );
-    if (parentkeys.length === 0)
+    if (parentkeys == null || parentkeys.length === 0)
       throw new BadRequestException('Parent id not found');
     const parentkey: string = parentkeys[0].slice(1, -1);
-    if (parentkey.length === 0)
+    if (parentkey == null || parentkey.length === 0)
       throw new BadRequestException('Parent id is invalid');
     const initiative: Issue = {
       id: null,
