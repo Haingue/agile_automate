@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { JiraService } from './jira/jira.service';
-import { ConfluenceService } from './confluence/confluence.service';
-import { Histogram } from 'prom-client';
-import { Cron } from '@nestjs/schedule';
+import { Injectable } from '@nestjs/common'
+import { JiraService } from './jira/jira.service'
+import { ConfluenceService } from './confluence/confluence.service'
+import { Histogram } from 'prom-client'
+import { Cron } from '@nestjs/schedule'
 
 @Injectable()
 export class AppService {
-  jiraStatus: Histogram;
-  conluenceStatus: Histogram;
+  jiraStatus: Histogram
+  conluenceStatus: Histogram
   constructor(
     private readonly jiraService: JiraService,
     private readonly confluenceService: ConfluenceService,
@@ -16,26 +16,26 @@ export class AppService {
       name: 'jira_status',
       help: 'Status of Jira API',
       buckets: [0, 1],
-    });
+    })
     this.conluenceStatus = new Histogram({
       name: 'confluence_status',
       help: 'Status of Confluence API',
       buckets: [0, 1],
-    });
+    })
   }
 
   @Cron('30 * * * * *')
   handleCheckApiStatus() {
     this.testJiraStatus()
       .then((status) => this.jiraStatus.observe(status))
-      .catch(() => this.jiraStatus.observe(0));
+      .catch(() => this.jiraStatus.observe(0))
     this.testConfluenceStatus()
       .then((status) => this.conluenceStatus.observe(status))
-      .catch(() => this.jiraStatus.observe(0));
+      .catch(() => this.jiraStatus.observe(0))
   }
 
   getHello(): string {
-    return 'Hello Agile !';
+    return 'Hello Agile !'
   }
 
   async testJiraStatus(): Promise<number> {
@@ -44,11 +44,11 @@ export class AppService {
       token: null,
       businessPlanSpaceKey: null,
       projectSpaceKey: null,
-    });
+    })
     if (response.status === 200) {
-      return 1;
+      return 1
     }
-    return 0;
+    return 0
   }
 
   async testConfluenceStatus(): Promise<number> {
@@ -56,10 +56,10 @@ export class AppService {
       baseUrl: `${process.env.JIRA_BASEURL}`,
       token: null,
       spaceKey: null,
-    });
+    })
     if (response.status === 200) {
-      return 1;
+      return 1
     }
-    return 0;
+    return 0
   }
 }

@@ -1,12 +1,12 @@
-import { JiraModule } from './jira/jira.module';
-import { TmmfModule } from './tmmf/tmmf.module';
-import { ConfluenceModule } from './confluence/confluence.module';
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
+import { JiraModule } from './jira/jira.module'
+import { TmmfModule } from './tmmf/tmmf.module'
+import { ConfluenceModule } from './confluence/confluence.module'
+import { Module } from '@nestjs/common'
+import { AppController } from './app.controller'
+import { AppService } from './app.service'
+import { PrometheusModule } from '@willsoto/nestjs-prometheus'
+import { ConfigModule } from '@nestjs/config'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
   imports: [

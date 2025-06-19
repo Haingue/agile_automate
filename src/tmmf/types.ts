@@ -22,9 +22,9 @@ export enum Label {
 }
 
 export type Properties = {
-  projectTemplateId: number;
-  initiativeTemplateId: number;
-  documentTemplateId: number;
-  preparationTemplateId: number;
-  doTemplateId: number;
-};
+  projectTemplateId: number
+  initiativeTemplateId: number
+  documentTemplateId: number
+  preparationTemplateId: number
+  doTemplateId: number
+}

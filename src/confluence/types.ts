@@ -1,52 +1,52 @@
 export type ConfluenceApi = {
-  baseUrl: string;
-  token: string;
-  spaceKey: string;
-};
+  baseUrl: string
+  token: string
+  spaceKey: string
+}
 
 export type AtlassianCollection<T> = {
-  results: T[];
-  start: number;
-  limit: number;
-  size: number;
-  totalSize: number;
-  _links: any;
-};
+  results: T[]
+  start: number
+  limit: number
+  size: number
+  totalSize: number
+  _links: any
+}
 
 export interface Error {
   message: {
-    translation: string;
-    args: [];
-  };
+    translation: string
+    args: []
+  }
 }
 
 export type AtlassianError = {
-  statusCode: number;
+  statusCode: number
   data: {
-    authorized?: boolean;
-    valid?: boolean;
-    errors?: Error[];
-    successful?: boolean;
-  };
-  message?: string;
-};
+    authorized?: boolean
+    valid?: boolean
+    errors?: Error[]
+    successful?: boolean
+  }
+  message?: string
+}
 
 export type Space = {
-  id?: number;
-  key?: string;
-  name?: string;
+  id?: number
+  key?: string
+  name?: string
   icon?: {
-    path: string;
-    width: number;
-    height: number;
-    isDefault: true;
-  };
+    path: string
+    width: number
+    height: number
+    isDefault: true
+  }
   description?: {
-    plain?: ContentView;
-    view?: ContentView;
-  };
-  homepage?: Content;
-};
+    plain?: ContentView
+    view?: ContentView
+  }
+  homepage?: Content
+}
 
 /**
  * These are the Confluence ContentApi Types that are supported by the API
@@ -75,13 +75,13 @@ export enum ContentFormat {
  * below is the Confluence API's definition of the content prop's values.
  */
 export type ContentProperty = {
-  id?: string;
-  key: string;
-  value: any;
-  version?: any;
-  content?: any;
-  _links?: any;
-};
+  id?: string
+  key: string
+  value: any
+  version?: any
+  content?: any
+  _links?: any
+}
 
 export enum ContentStatus {
   current = 'current',
@@ -96,40 +96,40 @@ export enum StringBoolean {
 }
 
 export type ContentChildren = {
-  attachment?: AtlassianCollection<Content>;
-  page?: AtlassianCollection<Content>;
-  comment?: AtlassianCollection<Content>;
-  _expandable: any;
-  _links: any;
-};
+  attachment?: AtlassianCollection<Content>
+  page?: AtlassianCollection<Content>
+  comment?: AtlassianCollection<Content>
+  _expandable: any
+  _links: any
+}
 
 export type ContentVersion = {
-  by?: AtlassianUser;
-  when?: string;
-  friendlyWhen?: string;
-  message?: string;
-  number: number;
-  minorEdit?: boolean;
-  content?: any;
+  by?: AtlassianUser
+  when?: string
+  friendlyWhen?: string
+  message?: string
+  number: number
+  minorEdit?: boolean
+  content?: any
   collaborators?: {
-    users: AtlassianUser[];
-    userKeys: string[];
-  };
-  _expandable?: any;
-  _links?: any;
-};
+    users: AtlassianUser[]
+    userKeys: string[]
+  }
+  _expandable?: any
+  _links?: any
+}
 
 export type ContentHistory = {
-  latest: boolean;
-  createdBy: AtlassianUser;
-  createdDate: string;
-  lastUpdated: ContentVersion;
-  previousVersion: ContentVersion;
-  contributors: any;
-  nextVersion: ContentVersion;
-  _expandable: any;
-  _links: any;
-};
+  latest: boolean
+  createdBy: AtlassianUser
+  createdDate: string
+  lastUpdated: ContentVersion
+  previousVersion: ContentVersion
+  contributors: any
+  nextVersion: ContentVersion
+  _expandable: any
+  _links: any
+}
 
 export enum ContentHistoryExpansions {
   lastUpdated = 'lastUpdated',
@@ -140,11 +140,11 @@ export enum ContentHistoryExpansions {
 }
 
 export type ContentLabel = {
-  prefix: string;
-  name: string;
-  id?: string;
-  label?: string;
-};
+  prefix: string
+  name: string
+  id?: string
+  label?: string
+}
 
 export enum OperationCheckResult {
   administer = 'administer',
@@ -168,187 +168,187 @@ export enum ContentLabelPrefixes {
 }
 
 export type LookAndFeel = {
-  headings: any;
-  links: any;
-  menus: any;
-  header: any;
-  content: any;
-  bordersAndDividers: any;
-};
+  headings: any
+  links: any
+  menus: any
+  header: any
+  content: any
+  bordersAndDividers: any
+}
 
 export type LookAndFeelSettings = {
-  selected: string;
-  global: LookAndFeel;
-  theme: LookAndFeel;
-  custom: LookAndFeel;
-};
+  selected: string
+  global: LookAndFeel
+  theme: LookAndFeel
+  custom: LookAndFeel
+}
 
 export type SystemInfo = {
-  cloudId: string;
-  commitHash: string;
-};
+  cloudId: string
+  commitHash: string
+}
 
 export type ChildTypes = {
   attachment?: {
-    value: boolean;
-    _links: any;
-  };
+    value: boolean
+    _links: any
+  }
   comment?: {
-    value: boolean;
-    _links: any;
-  };
+    value: boolean
+    _links: any
+  }
   page?: {
-    value: boolean;
-    _links: any;
-  };
+    value: boolean
+    _links: any
+  }
   _expandable: {
-    all: string;
-    attachment: string;
-    comment: string;
-    page: string;
-  };
-};
+    all: string
+    attachment: string
+    comment: string
+    page: string
+  }
+}
 
 export type ContentView = {
-  value?: string;
-  representation?: string;
-  embeddedContent?: any[];
-  webresource?: any;
-  _expandable?: any;
-};
+  value?: string
+  representation?: string
+  embeddedContent?: any[]
+  webresource?: any
+  _expandable?: any
+}
 
 export type ContentRestriction = {
-  operation: string;
+  operation: string
   restrictions: {
-    user?: AtlassianCollection<AtlassianUser>;
-    group?: AtlassianCollection<AtlassianGroup>;
-    _expandable?: any;
-  };
-  content?: Content;
-  _expandable?: any;
-  _links?: any;
-};
+    user?: AtlassianCollection<AtlassianUser>
+    group?: AtlassianCollection<AtlassianGroup>
+    _expandable?: any
+  }
+  content?: Content
+  _expandable?: any
+  _links?: any
+}
 
 export type Content = {
-  id?: string;
-  type?: ContentType;
-  status?: string;
-  title?: string;
-  space?: Space;
-  history?: ContentHistory;
-  version?: ContentVersion;
-  ancestors?: Content[];
-  operations?: OperationCheckResult[];
-  children?: ContentChildren;
-  childTypes?: ChildTypes;
-  descendants?: ContentChildren;
-  container?: any;
+  id?: string
+  type?: ContentType
+  status?: string
+  title?: string
+  space?: Space
+  history?: ContentHistory
+  version?: ContentVersion
+  ancestors?: Content[]
+  operations?: OperationCheckResult[]
+  children?: ContentChildren
+  childTypes?: ChildTypes
+  descendants?: ContentChildren
+  container?: any
   metadata?: {
-    properties?: any;
-    currentuser?: any;
-    simple?: any;
-    frontend?: any;
-    labels?: any;
-    likes?: any;
-    _expandable?: any;
-  };
+    properties?: any
+    currentuser?: any
+    simple?: any
+    frontend?: any
+    labels?: any
+    likes?: any
+    _expandable?: any
+  }
   body?: {
-    view?: ContentView;
-    export_view?: ContentView;
-    styled_view?: ContentView;
-    storage?: ContentView;
-    editor2?: ContentView;
-    dynamic?: ContentView;
-    anonymous_export_view?: ContentView;
-    _expandable?: any;
-  };
+    view?: ContentView
+    export_view?: ContentView
+    styled_view?: ContentView
+    storage?: ContentView
+    editor2?: ContentView
+    dynamic?: ContentView
+    anonymous_export_view?: ContentView
+    _expandable?: any
+  }
   restrictions?: {
-    read?: ContentRestriction;
-    update?: ContentRestriction;
-    _links?: any;
-  };
+    read?: ContentRestriction
+    update?: ContentRestriction
+    _links?: any
+  }
   _expandable?: {
-    childTypes?: string;
-    container?: string;
-    metadata?: string;
-    operations?: string;
-    children?: string;
-    restrictions?: string;
-    history?: string;
-    ancestors?: string;
-    body?: string;
-    version?: string;
-    descendants?: string;
-    space?: string;
-  };
-  _links?: any;
-};
+    childTypes?: string
+    container?: string
+    metadata?: string
+    operations?: string
+    children?: string
+    restrictions?: string
+    history?: string
+    ancestors?: string
+    body?: string
+    version?: string
+    descendants?: string
+    space?: string
+  }
+  _links?: any
+}
 
 export type Breadcrumb = {
-  label: string;
-  url: string;
-  separator: string;
-};
+  label: string
+  url: string
+  separator: string
+}
 
 export type ContainerSummary = {
-  title: string;
-  displayUrl: string;
-};
+  title: string
+  displayUrl: string
+}
 
 export type CqlContextProperties = {
-  spaceKey?: string;
-  contentId?: string;
-  contentStatuses?: ContentStatus[];
-};
+  spaceKey?: string
+  contentId?: string
+  contentStatuses?: ContentStatus[]
+}
 
 export type SearchResult = {
-  content?: Content;
-  title?: string;
-  excerpt?: string;
-  url?: string;
-  resultParentContainer: ContainerSummary;
-  resultGlobalContainer: ContainerSummary;
-  breadcrumbs: Breadcrumb[];
-  entityType: string;
-  iconCssClass: string;
-  lastModified: string;
-  friendlyLastModified: string;
-};
+  content?: Content
+  title?: string
+  excerpt?: string
+  url?: string
+  resultParentContainer: ContainerSummary
+  resultGlobalContainer: ContainerSummary
+  breadcrumbs: Breadcrumb[]
+  entityType: string
+  iconCssClass: string
+  lastModified: string
+  friendlyLastModified: string
+}
 
 export type AtlassianUser = {
-  type: string; //known, unknown, anonymous, user
-  username: string;
-  accountId: string;
-  accountType: string;
-  email: string;
-  publicName: string;
-  profilePicture: any;
-  displayName: string;
+  type: string //known, unknown, anonymous, user
+  username: string
+  accountId: string
+  accountType: string
+  email: string
+  publicName: string
+  profilePicture: any
+  displayName: string
   operations?: {
-    operation: string;
-    targetType: string;
-  }[];
+    operation: string
+    targetType: string
+  }[]
   details: {
-    business?: any;
-    personal?: any;
-  };
-  personalSpace: any;
-  _expandable: any;
-  _links: any;
-};
+    business?: any
+    personal?: any
+  }
+  personalSpace: any
+  _expandable: any
+  _links: any
+}
 
 export type AtlassianGroup = {
-  type: string;
-  name: string;
-  _links: any;
-};
+  type: string
+  name: string
+  _links: any
+}
 
-export type ResponseOrError<T> = T | AtlassianError;
+export type ResponseOrError<T> = T | AtlassianError
 
 /**
  * Given the ResponseOrError union type, return ture if the given value is an error, otherwise return false.
  * @param ob
  */
 export function isAtlassianError<T>(ob: ResponseOrError<T>): boolean {
-  return !!(ob as AtlassianError).statusCode;
+  return !!(ob as AtlassianError).statusCode
 }
