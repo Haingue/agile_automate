@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common'
 import { JiraService } from './jira/jira.service'
 import { ConfluenceService } from './confluence/confluence.service'
 import { Histogram } from 'prom-client'
 import { Cron } from '@nestjs/schedule'
 
 @Injectable()
-export class AppService {
+export class AppService implements OnApplicationBootstrap {
   jiraStatus: Histogram
   conluenceStatus: Histogram
   constructor(
@@ -24,14 +24,18 @@ export class AppService {
     })
   }
 
-  @Cron('30 * * * * *')
+  onApplicationBootstrap() {
+    this.handleCheckApiStatus()
+  }
+
+  @Cron('0 0 */5 * * *')
   handleCheckApiStatus() {
     this.testJiraStatus()
       .then((status) => this.jiraStatus.observe(status))
       .catch(() => this.jiraStatus.observe(0))
     this.testConfluenceStatus()
       .then((status) => this.conluenceStatus.observe(status))
-      .catch(() => this.jiraStatus.observe(0))
+      .catch(() => this.conluenceStatus.observe(0))
   }
 
   getHello(): string {
@@ -42,6 +46,7 @@ export class AppService {
     const response: Response = await this.jiraService.getStatus({
       baseUrl: `${process.env.JIRA_BASEURL}`,
       token: null,
+      projectBoardId: null,
       businessPlanSpaceKey: null,
       projectSpaceKey: null,
     })

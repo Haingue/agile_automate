@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
-import { SprintMetric, Issue, JiraApi, RemoteLink } from './types'
+import { SprintMetric, Issue, JiraApi, RemoteLink, IssueTaskStatus, Fields, Sprint } from './types';
 
 @Injectable()
 export class JiraService {
@@ -9,10 +9,31 @@ export class JiraService {
     return fetch(`${jiraApi.baseUrl}/api/3/serverInfo`)
   }
 
-  async _searchIssues(jql, jiraApi: JiraApi): Promise<number[]> {
+  async _searchActiveSprint(boardId: string, jiraApi: JiraApi): Promise<Sprint[]> {
+    const queryParam = new URLSearchParams()
+    queryParam.append('state', 'active')
+    const responsePage = await fetch(
+      `${jiraApi.baseUrl}/agile/1.0/board/${boardId}/sprint?` + queryParam,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: jiraApi.token,
+          Accept: 'application/json',
+        },
+      },
+    )
+    if (responsePage.ok) {
+      const json = await responsePage.json()
+      return json.values
+    }
+    throw Error(responsePage.statusText)
+  }
+
+  async _searchIssues(jql, jiraApi: JiraApi): Promise<Issue[]> {
     const queryParam = new URLSearchParams()
     queryParam.append('jql', jql)
-    queryParam.append('expand', 'id,key,summary,customfield_10351')
+    queryParam.append('maxResults', '5000')
+    queryParam.append('fields', 'id,key,summary,customfield_10351')
     const responsePage = await fetch(
       `${jiraApi.baseUrl}/api/3/search/jql?` + queryParam,
       {
@@ -34,24 +55,26 @@ export class JiraService {
     projectKey: string,
     jiraApi: JiraApi,
   ): Promise<SprintMetric> {
-    const metric: SprintMetric = { projectKey }
+    const metric: SprintMetric = { projectKey, issueNumberPerStatus: {} }
 
     const jql = (status) =>
       `project = "${projectKey}" and sprint in openSprints() and status = "${status}" ORDER BY updated DESC`
-    for (const status of [
-      'Backlog',
-      'To do',
-      'In progress',
-      'Blocked',
-      'Done',
-    ]) {
+    for (const status of Object.values(IssueTaskStatus)) {
       try {
-        const issues = await this._searchIssues(jql(status), jiraApi)
-        metric[`issue${status.replaceAll(' ', '')}Number`] = issues.length
+        const issues: Issue[] = await this._searchIssues(jql(status), jiraApi)
+        metric.issueNumberPerStatus[status] = issues.length
+        if (!metric.sprintName) {
+          metric.sprintName = issues[0].fields.customfield_10351[0].name
+        }
       } catch (error) {
-        metric[`issue${status.replaceAll(' ', '')}Number`] = -1
+        metric.issueNumberPerStatus[status] = null
       }
     }
+
+    try {
+      const sprints: Sprint[] = await this._searchActiveSprint(jiraApi.projectBoardId, jiraApi) // TODO change id by parameter
+      metric.sprintName = sprints[0].name
+    } catch (error) {}
     metric.timestamp = new Date()
 
     return metric

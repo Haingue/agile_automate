@@ -1,6 +1,7 @@
 export type JiraApi = {
   baseUrl: string
   token: string
+  projectBoardId: string
   businessPlanSpaceKey: string
   projectSpaceKey: string
 }
@@ -103,6 +104,16 @@ export type CutomField = {
   value?: string
 }
 
+export type Sprint = {
+  name: string
+  id?: number
+  boardId?: number
+  state?: Status
+  goal?: string
+  startDate?: Date
+  endDate?: Date
+}
+
 export type Fields = {
   parent: Parent
   project: Project
@@ -132,6 +143,7 @@ export type Fields = {
   updated?: string
   customfield_17537?: CutomField[] // Shop
   customfield_17540?: CutomField[] // Activiy type
+  customfield_10351?: Sprint[] // Sprint
 }
 
 export interface Parent {
@@ -170,13 +182,17 @@ export interface Link {
   status: Status
 }
 
+export enum IssueTaskStatus {
+  Backlog = 'Backlog',
+  ToDo = 'To do',
+  InProgress = 'In progress',
+  Blocked = 'Blocked',
+  Done = 'Done',
+}
+
 export type SprintMetric = {
   projectKey: string
   sprintName?: string
-  issueBacklogNumber?: number
-  issueTodoNumber?: number
-  issueInprogressNumber?: number
-  issueBlockedNumber?: number
-  issueDoneNumber?: number
+  issueNumberPerStatus: Partial<Record<string, number>>
   timestamp?: Date
 }

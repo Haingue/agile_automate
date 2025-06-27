@@ -4,19 +4,20 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  OnApplicationBootstrap,
 } from '@nestjs/common'
 import { ConfluenceService } from 'src/confluence/confluence.service'
 import { ConfluenceApi, Content } from 'src/confluence/types'
 import { Properties } from './types'
 import { JiraService } from 'src/jira/jira.service'
-import { Issue, IssueTypeId, JiraApi, RemoteLink } from 'src/jira/types'
+import { Issue, IssueTaskStatus, IssueTypeId, JiraApi, RemoteLink } from 'src/jira/types'
 import { Cron } from '@nestjs/schedule'
 import { Logger } from '@nestjs/common'
-import { Gauge } from 'prom-client'
+import { Counter, Gauge, Histogram } from 'prom-client'
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
 
 @Injectable()
-export class TmmfService {
+export class TmmfService implements OnApplicationBootstrap {
   private readonly logger = new Logger(TmmfService.name)
 
   private tmmfProperties: Properties = {
@@ -34,6 +35,7 @@ export class TmmfService {
     )}`,
     businessPlanSpaceKey: process.env.JIRA_BUSINESS_PLAN_SPACE_KEY,
     projectSpaceKey: process.env.JIRA_PROJECT_SPACE_KEY,
+    projectBoardId: process.env.JIRA_PROJECT_BOARD_ID,
   }
 
   private CONFLUENCE_API: ConfluenceApi = {
@@ -50,22 +52,34 @@ export class TmmfService {
   @Inject()
   confluenceService: ConfluenceService
 
-  @InjectMetric('issueNumber')
-  public counter: Gauge<string>
+  issueStatusCounter: Gauge = new Gauge({
+    name: 'issueNumber',
+    help: 'Number of issue in project',
+    labelNames: ['project', 'sprint', 'status'],
+  })
 
-  @Cron('* * 8,11,14,16 * * *')
+  onApplicationBootstrap() {
+    this.handleMetrics()
+  }
+
+  @Cron('0 15 8,11,14,18 * * *')
   handleMetrics() {
     this.logger.debug('Collect metrics for TMMF')
-    this.jiraService
-      .getSprintMetrics(this.JIRA_API.projectSpaceKey, this.JIRA_API)
-      .then((metrics) => {
-        Object.keys(metrics).forEach((m: string) =>
-          this.counter.set(
-            { project: this.JIRA_API.projectSpaceKey, status: m },
-            metrics[m],
-          ),
-        )
-      })
+    for (const projectKey of [
+      this.JIRA_API.projectSpaceKey,
+      // this.JIRA_API.businessPlanSpaceKey,
+    ]) {
+      this.jiraService
+        .getSprintMetrics(projectKey, this.JIRA_API)
+        .then((metrics) => {
+          Object.keys(metrics.issueNumberPerStatus).forEach((m: string) =>
+            this.issueStatusCounter.set(
+              { project: projectKey, sprint: metrics.sprintName, status: m },
+              metrics.issueNumberPerStatus[m],
+            ),
+          )
+        })
+    }
   }
 
   /**

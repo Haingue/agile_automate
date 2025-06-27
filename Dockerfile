@@ -20,7 +20,7 @@ COPY --chown=node:node . .
 # ENV CONFLUENCE_BASEURL ''
 # ENV CONFLUENCE_SPACE_KEY ''
 # ENV JIRA_BASEURL ''
-# ENV JIRA_SPACE_KEY ''
+# ENV JIRA_PROJECT_SPACE_KEY ''
 RUN npm run build
 ENV NODE_ENV production
 RUN npm ci --only=production && npm cache clean --force
